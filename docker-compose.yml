@@ -5,6 +5,8 @@ services:
     image: postgres
     volumes:
       - /var/lib/postgresql/data
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
   web:
     build: .
     command: python manage.py runserver --nostatic 0.0.0.0:8000
