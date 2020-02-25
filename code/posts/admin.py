@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import Post, Rubric, PostPhoto
 
-# Register your models here.
+
+admin.site.register(Post)
+admin.site.register(Rubric)
+admin.site.register(PostPhoto)
