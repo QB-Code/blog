@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="..\..\static\password-reset\passwordreset.css" />
+    {% block head_tags %}
+
+    {% endblock %}
+</head>
+<body>
+
+{% include 'blocks/header.html' %}
+
+<div>
+   
+    <main>
+        {% block main %}
+        <div class="conteiner">
+        <form class="resetform">
+        
+            <p class="firstp">Как снова войти в учётную запись <b>Blog</b></p>
+            <p class="secp">Расскажите подробней о своей учётной записи.</p>
+            <p>Укажите адрес электронной почты</p>
+            <p class="iferr">Неверный email</p>
+            <input class="inpt" type="email">
+            <br>
+            <input type="submit" class="button" value="Продолжить"></a>
+        </form>
+        </div>	
+
+        {% endblock %}
+    </main>
+</div>
+
+</body>
+</html> 
