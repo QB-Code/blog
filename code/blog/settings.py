@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
 
     'users.apps.UsersConfig',
+    'posts.apps.PostsConfig',
 ]
 
 SITE_ID = 1
