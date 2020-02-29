@@ -1,7 +1,5 @@
-from django.urls import path, re_path
+from django.urls import path
 from django.contrib.auth.views import PasswordResetConfirmView, LogoutView
-
-from allauth.account import views
 
 from .views import password_reset, user_page, email_confirm, user_test_page
 

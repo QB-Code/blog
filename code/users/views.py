@@ -29,6 +29,7 @@ def email_confirm(request, user_id, token):
         return HttpResponse('Token doesnt mush')
 
 
+# Convenient way to see current user, for development purposes only
 def user_test_page(request):
     user = request.user
     if user.is_authenticated:
