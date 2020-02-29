@@ -1,0 +1,11 @@
+{
+  "singup": {
+    "username": "dimon",
+    "password": "1234",
+    "email": "dimalox@gmail.com"
+  },
+  "login": {
+    "username": "root",
+    "password": "root"
+  }
+}
