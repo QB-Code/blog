@@ -1,6 +1,8 @@
 from rest_framework.serializers import ModelSerializer, ValidationError, Serializer, CharField
 from django.contrib.auth.models import User
 
+from .models import Comment
+
 
 class UserSerializer(ModelSerializer):
     def validate_username(self, value):
@@ -18,8 +20,7 @@ class UserSerializer(ModelSerializer):
             return value
 
     def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
-        user.is_active = False
+        user = User.objects.create_user(**validated_data, is_active=False)
         user.save()
         return user
 
@@ -33,6 +34,10 @@ class LoginSerializer(Serializer):
     password = CharField()
 
 
+class CommentSerializer(ModelSerializer):
+    def create(self, validated_data):
+        return Comment(**validated_data)
 
-
-
+    class Meta:
+        model = Comment
+        fields = ('content', 'post')

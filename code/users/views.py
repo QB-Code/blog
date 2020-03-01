@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.views import Response
 
-from .serializers import UserSerializer, LoginSerializer
+from .serializers import UserSerializer, LoginSerializer, CommentSerializer
 from .models import MyUser
 from .tokens import email_confirm_token_generator
 from .utils import send_email_confirmation, set_default_user_pic
@@ -75,3 +75,21 @@ class LoginView(APIView):
             else:
                 return Response({'status': 'error', 'message': 'Username or password is incorrect'},
                                 status=status.HTTP_400_BAD_REQUEST)
+
+
+class CommentsView(APIView):
+    def post(self, request):
+        serializer = CommentSerializer(data=request.data)
+
+        if serializer.is_valid(raise_exception=True):
+            if not request.user.is_authenticated:
+                return Response({'status': 'error', 'message': 'User is not logged in'},
+                                status=status.HTTP_401_UNAUTHORIZED)
+
+            comment = serializer.save()
+            comment.author = request.user.my_user
+            comment.save()
+
+            return Response({'status': 'created',
+                             'value': serializer.data},
+                            status=status.HTTP_201_CREATED)
