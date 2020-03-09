@@ -17,18 +17,19 @@ from django.contrib import admin
 from django.contrib.staticfiles.views import serve
 from django.views.decorators.cache import never_cache
 from django.urls import path, include
-from django.conf.urls.static import static
 from django.conf import settings
-
-from .settings import DEBUG
+from django.conf.urls.static import static
 
 
 urlpatterns = [
-    path('users/', include('users.urls')),
-    path('admin/', admin.site.urls),
     path('posts/', include('posts.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('users/', include('users.urls')),
+    path('api/v1/users/', include('users.api_urls')),
+    path('admin/', admin.site.urls),
+    path('accounts/', include('allauth.account.urls')),
+]
 
-if DEBUG:
+if settings.DEBUG:
     urlpatterns.append(path('static/<path:path>', never_cache(serve)))
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

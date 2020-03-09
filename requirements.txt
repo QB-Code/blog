@@ -2,3 +2,5 @@ Django==2.2.10
 psycopg2>=2.7,<3.0
 djangorestframework
 Pillow
+django-allauth
+requests
