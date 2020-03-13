@@ -1,15 +1,20 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 
-from rest_framework.views import APIView
 from rest_framework import status
-from rest_framework.views import Response
+from rest_framework.views import APIView, Response
+from rest_framework.parsers import FileUploadParser
 
-from .serializers import UserSerializer, LoginSerializer, CommentSerializer
-from .models import MyUser
+from .serializers import (
+    UserSerializer,
+    LoginSerializer,
+    CommentSerializer,
+    InitializeCommentWithPhotoSerializer
+)
+from .models import MyUser, CommentPhoto, Comment
 from .tokens import email_confirm_token_generator
 from .utils import send_email_confirmation, set_default_user_pic
 
@@ -47,6 +52,8 @@ def password_reset(request):
 
 
 class SingUpView(APIView):
+    serializer_class = UserSerializer
+
     def post(self, request):
         serializer = UserSerializer(data=request.data)
 
@@ -63,12 +70,13 @@ class SingUpView(APIView):
 
 
 class LoginView(APIView):
+    serializer_class = LoginSerializer
+
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
 
         if serializer.is_valid(raise_exception=True):
             user = authenticate(request=request, **serializer.data)
-            print(user)
             if user is not None:
                 login(request=request, user=user)
                 return Response({'status': 'ok', 'message': 'User successfully logged in'})
@@ -78,6 +86,8 @@ class LoginView(APIView):
 
 
 class CommentsView(APIView):
+    serializer_class = CommentSerializer
+
     def post(self, request):
         serializer = CommentSerializer(data=request.data)
 
@@ -93,3 +103,48 @@ class CommentsView(APIView):
             return Response({'status': 'created',
                              'value': serializer.data},
                             status=status.HTTP_201_CREATED)
+
+
+class CommentView(APIView):
+    serializer_class = CommentSerializer
+
+    def patch(self, request, comment_id):
+
+        comment = get_object_or_404(Comment, pk=comment_id)
+
+        if not comment.author.user == request.user:
+            return Response({'status': 'error'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = CommentSerializer(instance=comment, data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            comment = serializer.save()
+            return Response({'status': 'patched', 'value': comment.to_dict()})
+
+
+class CommentsPhotosView(APIView):
+    serializer_class = InitializeCommentWithPhotoSerializer
+    parser_class = (FileUploadParser,)
+
+    def post(self, request):
+        serializer = InitializeCommentWithPhotoSerializer(data=request.data)
+
+        if serializer.is_valid(raise_exception=True):
+            if not request.user.is_authenticated:
+                return Response({'status': 'error', 'message': 'User is not logged in'},
+                                status=status.HTTP_401_UNAUTHORIZED)
+
+            comment = serializer.save()
+            comment.author = request.user.my_user
+            comment.save()
+
+            comment_photo = CommentPhoto.objects.create(comment=comment,
+                                                        picture=serializer.validated_data['photo'])
+            return Response({'status': 'created', 'value': comment.to_dict()},
+                            status=status.HTTP_201_CREATED)
+
+
+class CommentPhotosView(APIView):
+    parser_class = (FileUploadParser,)
+
+    def post(self, request, comment_id):
+        pass

@@ -4,3 +4,5 @@ djangorestframework
 Pillow
 django-allauth
 requests
+Markdown
+django-filter

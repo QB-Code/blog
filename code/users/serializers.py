@@ -1,10 +1,12 @@
-from rest_framework.serializers import ModelSerializer, ValidationError, Serializer, CharField
+from rest_framework import serializers
+from rest_framework.serializers import ValidationError
 from django.contrib.auth.models import User
 
 from .models import Comment
+from posts.models import Post
 
 
-class UserSerializer(ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         try:
             User.objects.get(username=value)
@@ -29,15 +31,31 @@ class UserSerializer(ModelSerializer):
         fields = ('username', 'password', 'email')
 
 
-class LoginSerializer(Serializer):
-    username = CharField()
-    password = CharField()
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
 
 
-class CommentSerializer(ModelSerializer):
+class InitializeCommentWithPhotoSerializer(serializers.Serializer):
+    photo = serializers.ImageField()
+    content = serializers.CharField()
+    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
+
+    def create(self, validated_data):
+        return Comment(content=validated_data['content'], post=validated_data['post'])
+
+
+class CommentSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return Comment(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.content = validated_data['content']
+        instance.save()
+        return instance
 
     class Meta:
         model = Comment
         fields = ('content', 'post')
+
+    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all(), required=False)

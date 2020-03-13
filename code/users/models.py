@@ -18,6 +18,8 @@ class Comment(models.Model):
     content = models.TextField()
     rating = models.IntegerField(default=0)
     created_at = models.DateTimeField(default=datetime.datetime.now)
+    released_at = models.DateTimeField(null=True)
+    is_released = models.BooleanField(default=False)
 
     post = models.ForeignKey('posts.Post', on_delete=models.CASCADE, related_name='comments')
     author = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='comments')
@@ -25,6 +27,12 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ('created_at', )
+
+    def to_dict(self):
+        return {
+            'pk': self.pk,
+            'content': self.content,
+        }
 
 
 class CommentPhoto(models.Model):

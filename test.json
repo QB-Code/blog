@@ -11,5 +11,10 @@
   "create_comment": {
     "post": 1,
     "content": "dron lox"
+  },
+  "initialize comment with photo": {
+    "post": 1,
+    "content": "dron lox",
+    "photo_path": "dima.jpeg"
   }
 }

@@ -8,8 +8,8 @@ urlpatterns = [
     path('', user_test_page),
     path('<int:user_id>/', user_page, name='user_page'),
     path('logout/',  LogoutView.as_view(), name='logout'),
-    path('email-confirm/<user_id>/<token>', email_confirm, name='email_confirm'),
-    path('password-reset', password_reset, name='password_reset'),
+    path('email-confirm/<user_id>/<token>/', email_confirm, name='email_confirm'),
+    path('password-reset/', password_reset, name='password_reset'),
     path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(),
          name='password_reset_confirm'),
 ]
