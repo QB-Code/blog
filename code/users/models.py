@@ -15,7 +15,7 @@ class MyUser(models.Model):
 
 
 class Comment(models.Model):
-    content = models.TextField()
+    content = models.TextField(default='')
     rating = models.IntegerField(default=0)
     created_at = models.DateTimeField(default=datetime.datetime.now)
     released_at = models.DateTimeField(null=True)
@@ -26,7 +26,7 @@ class Comment(models.Model):
     rated_users = models.ManyToManyField(MyUser, blank=True, related_name='rated_comments', through='users.CommentRate')
 
     class Meta:
-        ordering = ('created_at', )
+        ordering = ('released_at', )
 
     def to_dict(self):
         return {
@@ -37,7 +37,7 @@ class Comment(models.Model):
 
 class CommentPhoto(models.Model):
     picture = models.ImageField(upload_to='users/comments/comments_photo')
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, blank=True, on_delete=models.CASCADE)
 
 
 class CommentRate(models.Model):

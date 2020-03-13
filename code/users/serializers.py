@@ -2,7 +2,9 @@ from rest_framework import serializers
 from rest_framework.serializers import ValidationError
 from django.contrib.auth.models import User
 
-from .models import Comment
+from datetime import datetime
+
+from .models import Comment, CommentPhoto
 from posts.models import Post
 
 
@@ -36,13 +38,21 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField()
 
 
-class InitializeCommentWithPhotoSerializer(serializers.Serializer):
+class InitCommentPhotoSerializer(serializers.Serializer):
     photo = serializers.ImageField()
-    content = serializers.CharField()
     post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
 
     def create(self, validated_data):
-        return Comment(content=validated_data['content'], post=validated_data['post'])
+        return Comment(post=validated_data['post'])
+
+
+class CommentPhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentPhoto
+        fields = ('picture',)
+
+    def create(self, validated_data):
+        return CommentPhoto(**validated_data)
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -51,6 +61,8 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.content = validated_data['content']
+        instance.is_released = True
+        instance.released_at = datetime.now()
         instance.save()
         return instance
 

@@ -8,11 +8,14 @@ from rest_framework import status
 from rest_framework.views import APIView, Response
 from rest_framework.parsers import FileUploadParser
 
+from datetime import datetime
+
 from .serializers import (
     UserSerializer,
     LoginSerializer,
     CommentSerializer,
-    InitializeCommentWithPhotoSerializer
+    InitCommentPhotoSerializer,
+    CommentPhotoSerializer,
 )
 from .models import MyUser, CommentPhoto, Comment
 from .tokens import email_confirm_token_generator
@@ -98,10 +101,12 @@ class CommentsView(APIView):
 
             comment = serializer.save()
             comment.author = request.user.my_user
+            comment.is_released = True
+            comment.released_at = datetime.now()
             comment.save()
 
             return Response({'status': 'created',
-                             'value': serializer.data},
+                             'value': comment.to_dict()},
                             status=status.HTTP_201_CREATED)
 
 
@@ -109,7 +114,6 @@ class CommentView(APIView):
     serializer_class = CommentSerializer
 
     def patch(self, request, comment_id):
-
         comment = get_object_or_404(Comment, pk=comment_id)
 
         if not comment.author.user == request.user:
@@ -122,11 +126,11 @@ class CommentView(APIView):
 
 
 class CommentsPhotosView(APIView):
-    serializer_class = InitializeCommentWithPhotoSerializer
+    serializer_class = InitCommentPhotoSerializer
     parser_class = (FileUploadParser,)
 
     def post(self, request):
-        serializer = InitializeCommentWithPhotoSerializer(data=request.data)
+        serializer = InitCommentPhotoSerializer(data=request.data)
 
         if serializer.is_valid(raise_exception=True):
             if not request.user.is_authenticated:
@@ -136,15 +140,41 @@ class CommentsPhotosView(APIView):
             comment = serializer.save()
             comment.author = request.user.my_user
             comment.save()
-
             comment_photo = CommentPhoto.objects.create(comment=comment,
                                                         picture=serializer.validated_data['photo'])
-            return Response({'status': 'created', 'value': comment.to_dict()},
+
+            value = {
+                'comment_pk': comment.pk,
+                'photo_pk': comment_photo.pk,
+                'photo_path': comment_photo.picture.path
+            }
+
+            return Response({'status': 'created', 'value': value},
                             status=status.HTTP_201_CREATED)
 
 
 class CommentPhotosView(APIView):
+    serializer_class = CommentPhotoSerializer
     parser_class = (FileUploadParser,)
 
     def post(self, request, comment_id):
-        pass
+        comment = get_object_or_404(Comment, pk=comment_id)
+
+        if not comment.author.user == request.user:
+            return Response({'status': 'error'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = CommentPhotoSerializer(data=request.data)
+
+        if serializer.is_valid(raise_exception=True):
+            comment_photo = serializer.save()
+            comment_photo.comment = comment
+            comment_photo.save()
+
+            value = {
+                'photo_pk': comment_photo.pk,
+                'photo_path': comment_photo.picture.path
+            }
+
+            return Response({'status': 'created', 'value': value},
+                            status=status.HTTP_201_CREATED)
+

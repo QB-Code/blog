@@ -1,20 +1,5 @@
 {
-  "singup": {
-    "username": "dimon",
-    "password": "1234",
-    "email": "dimalox@gmail.com"
-  },
-  "login": {
-    "username": "root",
-    "password": "root"
-  },
-  "create_comment": {
-    "post": 1,
-    "content": "dron lox"
-  },
-  "initialize comment with photo": {
-    "post": 1,
-    "content": "dron lox",
-    "photo_path": "dima.jpeg"
+  "patch comment": {
+    "content": "some dif content"
   }
 }
