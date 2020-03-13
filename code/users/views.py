@@ -124,6 +124,19 @@ class CommentView(APIView):
             comment = serializer.save()
             return Response({'status': 'patched', 'value': comment.to_dict()})
 
+    def delete(self, request, comment_id):
+        comment = get_object_or_404(Comment, pk=comment_id)
+
+        if not comment.author.user == request.user:
+            return Response({'status': 'error'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        for photo in comment.photos.all():
+            photo.picture.delete(save=False)
+
+        comment.delete()
+
+        return Response({'status': 'deleted', 'message': 'Comment successfully deleted'})
+
 
 class CommentsPhotosView(APIView):
     serializer_class = InitCommentPhotoSerializer
@@ -177,4 +190,17 @@ class CommentPhotosView(APIView):
 
             return Response({'status': 'created', 'value': value},
                             status=status.HTTP_201_CREATED)
+
+
+class CommentPhotoView(APIView):
+    def delete(self, request, photo_id):
+        photo = get_object_or_404(CommentPhoto, pk=photo_id)
+
+        if not photo.comment.author.user == request.user:
+            return Response({'status': 'error'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        photo.picture.delete(save=False)
+        photo.delete()
+
+        return Response({'status': 'deleted', 'message': 'Photo successfully deleted'})
 

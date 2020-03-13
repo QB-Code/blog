@@ -1,6 +1,14 @@
 from django.urls import path
 
-from .views import SingUpView, LoginView, CommentsView, CommentView, CommentsPhotosView, CommentPhotosView
+from .views import (
+    SingUpView,
+    LoginView,
+    CommentsView,
+    CommentView,
+    CommentsPhotosView,
+    CommentPhotosView,
+    CommentPhotoView,
+)
 
 
 urlpatterns = [
@@ -8,6 +16,7 @@ urlpatterns = [
     path('login/', LoginView.as_view()),
     path('comments/', CommentsView.as_view()),
     path('comments/photos/', CommentsPhotosView.as_view()),
+    path('comments/photos/<int:photo_id>/', CommentPhotoView.as_view()),
     path('comments/<int:comment_id>/', CommentView.as_view()),
     path('comments/<int:comment_id>/photos/', CommentPhotosView.as_view()),
 ]

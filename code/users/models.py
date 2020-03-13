@@ -37,7 +37,7 @@ class Comment(models.Model):
 
 class CommentPhoto(models.Model):
     picture = models.ImageField(upload_to='users/comments/comments_photo')
-    comment = models.ForeignKey(Comment, blank=True, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, blank=True, related_name='photos', on_delete=models.CASCADE)
 
 
 class CommentRate(models.Model):
