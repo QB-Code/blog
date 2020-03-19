@@ -80,3 +80,7 @@ class CommentRateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommentRate
         fields = ('like',)
+
+
+class BookmarkSerializer(serializers.Serializer):
+    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())

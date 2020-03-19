@@ -18,8 +18,9 @@ from .serializers import (
     InitCommentPhotoSerializer,
     CommentPhotoSerializer,
     CommentRateSerializer,
+    BookmarkSerializer,
 )
-from .models import MyUser, CommentPhoto, Comment, CommentRate
+from .models import MyUser, Bookmark, CommentPhoto, Comment, CommentRate
 from .tokens import email_confirm_token_generator
 from .utils import send_email_confirmation, set_default_user_pic
 
@@ -290,3 +291,31 @@ class CommentRateView(APIView):
 
         return Response({'status': 'deleted'})
 
+
+class BookmarksView(APIView):
+    serializer_class = BookmarkSerializer
+
+    def post(self, request):
+        serializer = BookmarkSerializer(data=request.data)
+
+        if serializer.is_valid(raise_exception=True):
+            if not request.user.is_authenticated:
+                return Response({'status': 'error'}, status=status.HTTP_401_UNAUTHORIZED)
+
+            bookmark = Bookmark.objects.create(post=serializer.validated_data['post'],
+                                               my_user=request.user.my_user)
+
+            return Response({'status': 'created', 'value': {'pk': bookmark.pk}},
+                            status=status.HTTP_201_CREATED)
+
+
+class BookmarkView(APIView):
+    def delete(self, request, bookmark_id):
+        bookmark = get_object_or_404(Bookmark, pk=bookmark_id)
+
+        if not request.user == bookmark.my_user.user:
+            return Response({'status': 'error'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        bookmark.delete()
+
+        return Response({'status': 'deleted', 'message': 'Bookmark successfully deleted'})

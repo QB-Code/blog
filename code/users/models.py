@@ -9,9 +9,14 @@ class MyUser(models.Model):
     rating = models.IntegerField(default=0)
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='my_user')
-    bookmarks = models.ManyToManyField('posts.Post', blank=True)
+    bookmarks = models.ManyToManyField('posts.Post', blank=True, through='users.Bookmark')
     subscribed_rubrics = models.ManyToManyField('posts.Rubric', blank=True)
     subscribed_users = models.ManyToManyField('self', blank=True)
+
+
+class Bookmark(models.Model):
+    post = models.ForeignKey('posts.Post', on_delete=models.CASCADE)
+    my_user = models.ForeignKey(MyUser, on_delete=models.CASCADE)
 
 
 class Comment(models.Model):
