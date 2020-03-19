@@ -16,7 +16,7 @@ from .views import (
 
 
 urlpatterns = [
-    path('', SingUpView.as_view()),
+    path('users/', SingUpView.as_view()),
     path('login/', LoginView.as_view()),
     path('comments/', CommentsView.as_view()),
     path('comments/photos/', CommentsPhotosView.as_view()),
