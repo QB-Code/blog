@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 from datetime import datetime
 
-from .models import Comment, CommentPhoto
+from .models import Comment, CommentPhoto, CommentRate
 from posts.models import Post
 
 
@@ -71,3 +71,12 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('content', 'post')
 
     post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all(), required=False)
+
+
+class CommentRateSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        return CommentRate(**validated_data)
+
+    class Meta:
+        model = CommentRate
+        fields = ('like',)

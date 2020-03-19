@@ -42,7 +42,10 @@ class CommentPhoto(models.Model):
 
 class CommentRate(models.Model):
     like = models.BooleanField()
-    author = models.ForeignKey(MyUser, on_delete=models.CASCADE)
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
+    author = models.ForeignKey(MyUser, blank=True, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, blank=True, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('author', 'comment')
 
 

@@ -1,5 +1,8 @@
 {
   "patch comment": {
     "content": "some dif content"
+  },
+  "patch comment rate": {
+    "like": true
   }
 }

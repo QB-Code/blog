@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
@@ -16,8 +17,9 @@ from .serializers import (
     CommentSerializer,
     InitCommentPhotoSerializer,
     CommentPhotoSerializer,
+    CommentRateSerializer,
 )
-from .models import MyUser, CommentPhoto, Comment
+from .models import MyUser, CommentPhoto, Comment, CommentRate
 from .tokens import email_confirm_token_generator
 from .utils import send_email_confirmation, set_default_user_pic
 
@@ -203,4 +205,88 @@ class CommentPhotoView(APIView):
         photo.delete()
 
         return Response({'status': 'deleted', 'message': 'Photo successfully deleted'})
+
+
+class CommentRatesView(APIView):
+    serializer_class = CommentRateSerializer
+
+    def post(self, request, comment_id):
+
+        serializer = CommentRateSerializer(data=request.data)
+
+        if serializer.is_valid(raise_exception=True):
+            if not request.user.is_authenticated:
+                return Response({'status': 'error'}, status=status.HTTP_401_UNAUTHORIZED)
+
+            comment = get_object_or_404(Comment, pk=comment_id)
+
+            comment_rate = serializer.save()
+            comment_rate.comment = comment
+            comment_rate.author = request.user.my_user
+            try:
+                comment_rate.save()
+            except IntegrityError:
+                return Response({'status': 'error', 'message': 'You already rated this comment'},
+                                status=status.HTTP_406_NOT_ACCEPTABLE)
+
+            if comment_rate.like:
+                comment.rating += 1
+            else:
+                comment.rating -= 1
+
+            comment.save()
+
+            value = {
+                'pk': comment_rate.pk,
+                'like': comment_rate.like
+            }
+
+            return Response({'status': 'created', 'value': value}, status=status.HTTP_201_CREATED)
+
+
+class CommentRateView(APIView):
+    serializer_class = CommentRateSerializer
+
+    def patch(self, request, rate_id):
+        serializer = CommentRateSerializer(data=request.data)
+
+        if serializer.is_valid(raise_exception=True):
+            comment_rate = get_object_or_404(CommentRate, pk=rate_id)
+
+            if not request.user == comment_rate.author.user:
+                return Response({'status': 'error'}, status=status.HTTP_401_UNAUTHORIZED)
+
+            new_comment_rate = serializer.save()
+            if new_comment_rate.like == comment_rate.like:
+                return Response({'status': 'ok'})
+            else:
+                comment_rate.like = new_comment_rate.like
+                comment = comment_rate.comment
+                if comment_rate.like:
+                    if comment_rate.like:
+                        comment.rating += 1
+                    else:
+                        comment.rating -= 1
+
+                comment.save()
+                comment_rate.save()
+
+                return Response({'status': 'patched'})
+
+    def delete(self, request, rate_id):
+        comment_rate = get_object_or_404(CommentRate, pk=rate_id)
+
+        if not request.user == comment_rate.author.user:
+            return Response({'status': 'error'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        comment = comment_rate.comment
+        if comment_rate.like:
+            comment.rating += 1
+        else:
+            comment.rating -= 1
+
+        comment.save()
+        comment_rate.delete()
+
+        return Response({'status': 'deleted'})
 
