@@ -7,6 +7,9 @@ from requests import get
 import os
 
 from .tokens import email_confirm_token_generator
+from .randomcolor import RandomColor
+
+color_generator = RandomColor()
 
 
 def send_email_confirmation(user):
@@ -22,8 +25,12 @@ def send_email_confirmation(user):
 
 
 def set_default_user_pic(my_user, username):
-    response = get(url=f'https://eu.ui-avatars.com/api/?background=0D8ABC&color=fff&name={username}',
-                   stream=True)
+    background_color = color_generator.generate()[0][1:]
+    initials = "".join([string[0] for string in username.split()])
+
+    response = get(url=f'https://eu.ui-avatars.com/api/?size=128&font-size=0.7&background={background_color}'
+                       f'&color=fff&name={initials}', stream=True)
+
     image_path = os.path.join('users', 'avatars', f'{username}.png')
     image_full_path = os.path.join(settings.MEDIA_DIR, image_path)
 
