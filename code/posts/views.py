@@ -9,7 +9,7 @@ def all_posts(request):
     return render(request, template_name='posts/all-posts.html')
 
 
-def write_post(request, user_id):
+def write_post(request, post_id):
     return render(request, template_name='posts/writing-post.html')
 
 
