@@ -1,11 +1,38 @@
 {% extends 'base/header-both-asides.html' %}
 
-{% block title %}{% endblock %}
+{% block title %}
+    Document
+{% endblock %}
 
 {% block head_tags %}
-
+    {% load static %}
+    {% static 'css/posts.css' %}
 {% endblock %}
 
 {% block main %}
-
+    <div class="post__item">
+        <div class="post__item-header">популярное</div>
+        <hr class="postline">
+        <div class="post__item-info">
+            <div class="post__item-info-ico">A</div>
+            <div class="post__item-info-name">Andrey</div>
+            <div class="post__item-info-time">вчера в 19:00</div>
+            <a href="" class="post__item-info-more"><i class="fas fa-ellipsis-h"></i></a>
+        </div>
+        <div class="post__item-title">world of warcraft</div>
+        <div class="post__item-text">ебать варчрафт новій</div>
+        <div class="post__item-img">
+            <img src="img/Image 1.png" alt="">
+        </div>
+        <div class="post__item-social">
+            <div class="comments">
+                <a href="#" class="com"><i class="fas fa-comment"></i>100</a>
+                <a href="#" class="save"><i class="fas fa-bookmark"></i><span>в закладки</span></a>
+            </div>
+            <div class="likes">
+                <a href="#" class="dis"><i class="fas fa-heart-broken"></i>10</a>
+                <a href="#" class="like"><i class="fas fa-heart"></i>100</a>
+            </div>
+        </div>
+    </div>
 {% endblock %}

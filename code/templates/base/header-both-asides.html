@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}{% endblock %}</title>
+    {% load static %}
+    {% static 'css/header.css' %}
+    {% static 'css/aside_right.css' %}
     {% block head_tags %}
 
     {% endblock %}
@@ -15,7 +18,7 @@
     {% include 'blocks/rubrics-aside.html' %}
     <main>
         {% block main %}
-
+            
         {% endblock %}
     </main>
     {% include 'blocks/comments-aside.html' %}
