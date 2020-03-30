@@ -3,80 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" type="text/css" href="css/uno-post.min.css" />
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.1/css/all.css">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.1/css/v4-shims.css">
+    <link rel="stylesheet" type="text/css" href="css\rubrics-aside.min.css" />
     {% block head_tags %}
 
     {% endblock %}
 </head>
 <body>
 
-
-    {% include 'blocks/header.html' %}
-
-    <div>
-   
-        <main>
-            {% block main %}
-            
-            <div class="smallheader">
-                <div class="conteiner">
-                <button class="preview" type="button">Предпросмотр</button>
-                <div>
-                    <i class="far fa-save"></i>
-                    <button class="preview" type="submit">Опубликовать</button>
-                </div>
-                </div>
-            </div>
-
-            <div>
-                <div class="conteiner">
-                    <form class="zagf">
-                       <input type="text" class="zag" value="Заголовок">
-                    </form>
-
-                </div>
-                
-                <div class="biginput">
-                    <div class="conteiner">
-                        <div>
-                        <div>
-                            <i class="fas fa-plus triggerof"></i>
-                            <i class="fas fa-times close"></i>
-                        </div>
-                    <ul type="none" class="list">
-                        <li class="inlist">
-                            <i class="fas fa-heading"></i>
-                            заголовок
-                        </li>
-                        <li class="inlist">
-                            <i class="fas fa-photo-video spec"></i>
-                            фото и видео
-                        </li>
-                        <li class="inlist">
-                            <i class="fas fa-link"></i>
-                            ссылка
-                        </li>
-                        <li class="inlist">
-                            <i class="fas fa-list"></i>
-                            список
-                        </li>
-                        <li class="inlist">
-                            <i class="fas fa-headphones"></i>
-                            аудио
-                        </li>
-                    </ul>
-                    </div>
-                    <i class="fas fa-cog set"></i>
-                    </div>
-                </div>
-                </div>
-            </div>
-
-            {% endblock %}
-        </main>
+<div class="side-bar">
+    <ul class="rubrics">
+        <li >Популярное</li>
+        <li >Свежее</li>
+        <li >Рубрики</li>
+        <li >Пользователи</li>
+    </ul>
+    <div class="users">
+        Пользователи
+        <i class="fas fa-cog set"></i>
     </div>
-    
+    <ul class="user-list">
+        <li ><img src="#" class="user-avatar"></li>
+    </ul>
+    <div class="footer">
+        <div class="footer-in">
+            Реклама и контакты
+        </div>
+        <div class="footer-in">
+            рассылка на почту
+        </div>
+        <div class="footer-in">
+            ios
+            android
+        </div>
+    </div>
+</div>
+
 </body>
 </html> 
