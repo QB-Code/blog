@@ -9,55 +9,42 @@ let gulp = require('gulp'),
     autoprefixer = require('gulp-autoprefixer');
 
 
-let arrBlock = "base/.blocks/.messages/.users/";
+let arrBlock = "base.blocks.messages.users";
 
-function scss(f) {f();
-    arrBlock.split('.').forEach(function(element) {        
-        gulp.task('element', function() {
-            return gulp.src('code/static/' + element + 'css/*scss')
-                .pipe(sass({outputStyle: "compressed"}))
-                .pipe(autoprefixer({
-                    overrideBrowserslist: ['last 2 versions']
-                }))
-                .pipe(rename({suffix: '.min'}))
-                .pipe(gulp.dest('code/static/' + element + 'css/'))
-        });
-    });
-}
+gulp.task('scss', function() {
+    return gulp.src('code/static/**/css/*.scss')
+        .pipe(sass({outputStyle: "compressed"}))
+        .pipe(autoprefixer({
+            overrideBrowserslist: ['last 2 versions']
+        }))
+        .pipe(rename({suffix: '.min'}))
+        .pipe(gulp.dest('code/static'))
+});
 
-function html(f) {f();
-    arrBlock.split('.').forEach(function(element) {        
-        gulp.task('element', function() {
-            return gulp.src('code/templates/' + element + '*.html')
-            .pipe(htmlmin({ collapseWhitespace: true }))
-            .pipe(rename({suffix: '.min'}))
-            .pipe(gulp.dest('code/templates_min/' + element));
-        });
-    });
-}
+gulp.task('html', function() {
+    return gulp.src('code/templates/**/*.html')
+        .pipe(htmlmin({ collapseWhitespace: true }))
+        .pipe(rename({suffix: '.min'}))
+        .pipe(gulp.dest('code/templates_min'));
+})
 
-function js(f) {f();
-    arrBlock.split('.').forEach(function(element) {        
-        gulp.task('element', function() {
-            return gulp.src('code/static/' + element + 'js/*.js')
-            .pipe(uglify())
-            .pipe(rename({suffix: '.min'}))
-            .pipe(gulp.dest('code/static/' + element + 'js/'))
-        });
-    });
-}
+gulp.task('js', async()=> {
+    return gulp.src('code/static/**/js/*.js')
+    .pipe(uglify())
+    .pipe(rename({suffix: '.min'}))
+    .pipe(gulp.dest('code/static/**/js/'));
+});
 
-function images(f) {f();
-    arrBlock.split('.').forEach(function(element) {        
-        gulp.src('code/static/' + element + 'images/*')
+gulp.task('images', async()=> {      
+    gulp.src('code/static/**/images/*')
         .pipe(imagemin())
-        .pipe(gulp.dest('code/static/' + element + 'images_min/'))
-    });
-}
+        .pipe(gulp.dest('code/static/**/images_min/'))
+});
 
 gulp.task('clean', async function() {
     del.sync('app/index.html');
 });
 
 gulp.task('clean', gulp.series('clean'))
-gulp.task('default', gulp.series(scss, html, js, images));
+gulp.task('default', gulp.series('scss', 'html', 'js', 'images'));
+
