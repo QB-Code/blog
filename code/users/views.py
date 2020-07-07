@@ -1,16 +1,16 @@
-from django.db import IntegrityError
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError
 from django.http import HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
 
 from rest_framework import status
-from rest_framework.views import APIView, Response
 from rest_framework.parsers import FileUploadParser
+from rest_framework.views import APIView, Response
 
-from datetime import datetime
-
+from .models import MyUser, Bookmark, CommentPhoto, Comment, CommentRate
 from .serializers import (
     UserSerializer,
     LoginSerializer,
@@ -20,7 +20,6 @@ from .serializers import (
     CommentRateSerializer,
     BookmarkSerializer,
 )
-from .models import MyUser, Bookmark, CommentPhoto, Comment, CommentRate
 from .tokens import email_confirm_token_generator
 from .utils import send_email_confirmation, set_default_user_pic
 
@@ -105,7 +104,7 @@ class CommentsView(APIView):
             comment = serializer.save()
             comment.author = request.user.my_user
             comment.is_released = True
-            comment.released_at = datetime.now()
+            comment.released_at = timezone.now()
             comment.save()
 
             return Response({'status': 'created',

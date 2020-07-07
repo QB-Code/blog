@@ -14,7 +14,7 @@ class Post(models.Model):
     content = models.TextField()
     picture = models.ImageField(upload_to='posts/post_image', null=True)
     rating = models.IntegerField(default=0)
-    rubric = models.ForeignKey(Rubric, on_delete=models.CASCADE, blank=True)
+    rubric = models.ForeignKey(Rubric, on_delete=models.CASCADE, blank=True, null=True)
     author = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='user_posts')
     rated_users = models.ManyToManyField(MyUser, related_name='ratings', blank=True)
 

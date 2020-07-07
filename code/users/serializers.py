@@ -1,11 +1,10 @@
+from django.contrib.auth.models import User
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.serializers import ValidationError
-from django.contrib.auth.models import User
 
-from datetime import datetime
-
-from .models import Comment, CommentPhoto, CommentRate
 from posts.models import Post
+from .models import Comment, CommentPhoto, CommentRate
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -62,7 +61,7 @@ class CommentSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.content = validated_data['content']
         instance.is_released = True
-        instance.released_at = datetime.now()
+        instance.released_at = timezone.now()
         instance.save()
         return instance
 

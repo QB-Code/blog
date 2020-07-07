@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-import datetime
+from django.utils import timezone
 
 
 class MyUser(models.Model):
@@ -22,7 +22,7 @@ class Bookmark(models.Model):
 class Comment(models.Model):
     content = models.TextField(default='')
     rating = models.IntegerField(default=0)
-    created_at = models.DateTimeField(default=datetime.datetime.now)
+    created_at = models.DateTimeField(default=timezone.now)
     released_at = models.DateTimeField(null=True)
     is_released = models.BooleanField(default=False)
 
