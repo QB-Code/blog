@@ -9,14 +9,15 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.parsers import FileUploadParser
 from rest_framework.views import APIView, Response
+from rest_framework.permissions import IsAuthenticated
 
-from .models import MyUser, Bookmark, CommentPhoto, Comment, CommentRate
+from .models import MyUser, Bookmark, CommentPicture, Comment, CommentRate
 from .serializers import (
     UserSerializer,
     LoginSerializer,
     CommentSerializer,
-    InitCommentPhotoSerializer,
-    CommentPhotoSerializer,
+    InitCommentPictureSerializer,
+    CommentPictureSerializer,
     CommentRateSerializer,
     BookmarkSerializer,
 )
@@ -92,15 +93,12 @@ class LoginView(APIView):
 
 class CommentsView(APIView):
     serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = CommentSerializer(data=request.data)
 
         if serializer.is_valid(raise_exception=True):
-            if not request.user.is_authenticated:
-                return Response({'status': 'error', 'message': 'User is not logged in'},
-                                status=status.HTTP_401_UNAUTHORIZED)
-
             comment = serializer.save()
             comment.author = request.user.my_user
             comment.is_released = True
@@ -132,8 +130,8 @@ class CommentView(APIView):
         if not comment.author.user == request.user:
             return Response({'status': 'error'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        for photo in comment.photos.all():
-            photo.picture.delete(save=False)
+        for picture in comment.pictures.all():
+            picture.picture.delete(save=False)
 
         comment.delete()
 
@@ -141,88 +139,85 @@ class CommentView(APIView):
 
 
 class CommentsPhotosView(APIView):
-    serializer_class = InitCommentPhotoSerializer
+    serializer_class = InitCommentPictureSerializer
     parser_class = (FileUploadParser,)
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = InitCommentPhotoSerializer(data=request.data)
+        serializer = InitCommentPictureSerializer(data=request.data)
 
         if serializer.is_valid(raise_exception=True):
-            if not request.user.is_authenticated:
-                return Response({'status': 'error', 'message': 'User is not logged in'},
-                                status=status.HTTP_401_UNAUTHORIZED)
-
             comment = serializer.save()
             comment.author = request.user.my_user
             comment.save()
-            comment_photo = CommentPhoto.objects.create(comment=comment,
-                                                        picture=serializer.validated_data['photo'])
+            comment_picture = CommentPicture.objects.create(comment=comment,
+                                                            picture=serializer.validated_data['picture'])
 
             value = {
                 'comment_pk': comment.pk,
-                'photo_pk': comment_photo.pk,
-                'photo_path': comment_photo.picture.path
+                'picture_pk': comment_picture.pk,
+                'picture_path': comment_picture.picture.path
             }
 
             return Response({'status': 'created', 'value': value},
                             status=status.HTTP_201_CREATED)
 
 
-class CommentPhotosView(APIView):
-    serializer_class = CommentPhotoSerializer
+class CommentPicturesView(APIView):
+    serializer_class = CommentPictureSerializer
     parser_class = (FileUploadParser,)
 
     def post(self, request, comment_id):
         comment = get_object_or_404(Comment, pk=comment_id)
-
         if not comment.author.user == request.user:
             return Response({'status': 'error'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        serializer = CommentPhotoSerializer(data=request.data)
+        serializer = CommentPictureSerializer(data=request.data)
 
         if serializer.is_valid(raise_exception=True):
-            comment_photo = serializer.save()
-            comment_photo.comment = comment
-            comment_photo.save()
+            comment_picture = serializer.save()
+            comment_picture.comment = comment
+            comment_picture.save()
 
             value = {
-                'photo_pk': comment_photo.pk,
-                'photo_path': comment_photo.picture.path
+                'picture_pk': comment_picture.pk,
+                'picture_url': comment_picture.picture.url
             }
 
             return Response({'status': 'created', 'value': value},
                             status=status.HTTP_201_CREATED)
 
 
-class CommentPhotoView(APIView):
-    def delete(self, request, photo_id):
-        photo = get_object_or_404(CommentPhoto, pk=photo_id)
+class CommentPictureView(APIView):
+    def delete(self, request, picture_id):
+        picture = get_object_or_404(CommentPicture, pk=picture_id)
 
-        if not photo.comment.author.user == request.user:
+        if not picture.comment.author.user == request.user:
             return Response({'status': 'error'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        photo.picture.delete(save=False)
-        photo.delete()
+        picture.picture.delete(save=False)
+        picture.delete()
 
-        return Response({'status': 'deleted', 'message': 'Photo successfully deleted'})
+        return Response({'status': 'deleted', 'message': 'Picture successfully deleted'})
 
 
 class CommentRatesView(APIView):
     serializer_class = CommentRateSerializer
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, comment_id):
+        comment = get_object_or_404(Comment, pk=comment_id)
+        if comment.author.user == request.user:
+            return Response({'status': 'error', 'message': 'You cant rate your comment'},
+                            status=status.HTTP_406_NOT_ACCEPTABLE)
 
         serializer = CommentRateSerializer(data=request.data)
 
         if serializer.is_valid(raise_exception=True):
-            if not request.user.is_authenticated:
-                return Response({'status': 'error'}, status=status.HTTP_401_UNAUTHORIZED)
-
-            comment = get_object_or_404(Comment, pk=comment_id)
-
             comment_rate = serializer.save()
             comment_rate.comment = comment
             comment_rate.author = request.user.my_user
+
             try:
                 comment_rate.save()
             except IntegrityError:

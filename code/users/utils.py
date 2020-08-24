@@ -1,13 +1,15 @@
+import os
+import tempfile
+
+from PIL import Image
+from django.conf import settings
 from django.core import mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-from django.conf import settings
-
 from requests import get
-import os
 
-from .tokens import email_confirm_token_generator
 from .randomcolor import RandomColor
+from .tokens import email_confirm_token_generator
 
 color_generator = RandomColor()
 
@@ -41,3 +43,11 @@ def set_default_user_pic(my_user, username):
 
         my_user.picture.name = image_path
         my_user.save()
+
+
+def temporary_image():
+    image = Image.new('RGB', (100, 100))
+    tmp_file = tempfile.NamedTemporaryFile(suffix='.jpg')
+    image.save(tmp_file, 'jpeg')
+    tmp_file.seek(0)  # important because after save(), the fp is already at the end of the file
+    return tmp_file

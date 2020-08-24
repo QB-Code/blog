@@ -40,9 +40,9 @@ class Comment(models.Model):
         }
 
 
-class CommentPhoto(models.Model):
-    picture = models.ImageField(upload_to='users/comments/photos')
-    comment = models.ForeignKey(Comment, blank=True, related_name='photos', on_delete=models.CASCADE)
+class CommentPicture(models.Model):
+    picture = models.ImageField(upload_to='users/comments/pictures')
+    comment = models.ForeignKey(Comment, blank=True, related_name='pictures', on_delete=models.CASCADE)
 
 
 class CommentRate(models.Model):

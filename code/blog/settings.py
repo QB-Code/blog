@@ -157,6 +157,6 @@ ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/'
 
 
 try:
-    from .dev_settings import *
+    from .local_settings import *
 except ModuleNotFoundError:
     pass

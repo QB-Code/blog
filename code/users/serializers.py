@@ -4,7 +4,7 @@ from rest_framework import serializers
 from rest_framework.serializers import ValidationError
 
 from posts.models import Post
-from .models import Comment, CommentPhoto, CommentRate
+from .models import Comment, CommentPicture, CommentRate
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -37,21 +37,21 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField()
 
 
-class InitCommentPhotoSerializer(serializers.Serializer):
-    photo = serializers.ImageField()
+class InitCommentPictureSerializer(serializers.Serializer):
+    picture = serializers.ImageField()
     post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
 
     def create(self, validated_data):
         return Comment(post=validated_data['post'])
 
 
-class CommentPhotoSerializer(serializers.ModelSerializer):
+class CommentPictureSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CommentPhoto
+        model = CommentPicture
         fields = ('picture',)
 
     def create(self, validated_data):
-        return CommentPhoto(**validated_data)
+        return CommentPicture(**validated_data)
 
 
 class CommentSerializer(serializers.ModelSerializer):

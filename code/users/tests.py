@@ -1,13 +1,18 @@
 import json
+import tempfile
+from PIL import Image
+from pathlib import Path
 
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.core.files import File
 from rest_framework import status
 from rest_framework.test import APIRequestFactory
 from rest_framework.test import APITestCase
 
 from posts.models import Post
-from users.models import MyUser, Comment
+from users.models import MyUser, Comment, CommentPicture
+from .utils import temporary_image
 
 
 class CommentsViewsTestsBase(APITestCase):
@@ -45,12 +50,12 @@ class CommentsViewTests(CommentsViewsTestsBase):
 
         self.assertTrue(actual_comment.content == self.comment_content, actual_comment.author == self.user1)
 
-    def test_post__unauthorized_user__failed_401(self):
+    def test_post__unauthorized_user__failed_403(self):
         self.client.logout()
         response = self.client.post(reverse('api/comments'),
                                     {'content': self.comment_content, 'post': self.post.pk})
 
-        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
 
 class CommentViewTests(CommentsViewsTestsBase):
@@ -115,4 +120,84 @@ class CommentViewTests(CommentsViewsTestsBase):
         self.assertEqual(self.new_comment_content, actual_comment_content)
 
 
+class CommentsPicturesViewsTestsBase(CommentsViewsTestsBase):
+    def is_picture_exist(self, path):
+        response = self.client.get(path)
+        return response.status_code == status.HTTP_200_OK
 
+    def setUp(self):
+        super(CommentsPicturesViewsTestsBase, self).setUp()
+
+        self.picture_pil = temporary_image()
+        self.picture_file = File(Path('media/tests/users/ricardo.png').open(mode='rb'))
+        self.comment_by_user1_picture = CommentPicture.objects.create(comment=self.comment_by_user1,
+                                                                      picture=self.picture_file)
+
+
+class CommentPicturesViewTests(CommentsPicturesViewsTestsBase):
+    def test_post__wrong_comment_id__failed_404(self):
+        response = self.client.post(reverse('api/comment/pictures', kwargs={'comment_id': 12312}),
+                                    {'picture': self.picture_pil})
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+    def test_post__unauthorized_user__failed_401(self):
+        self.client.login(username='User2', password='1')
+
+        response = self.client.post(reverse('api/comment/pictures', kwargs={'comment_id': self.comment_by_user1.pk}),
+                                    {'picture': self.picture_pil})
+
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+
+    def test_post__authorized_user__successfully_created_201(self):
+        response = self.client.post(reverse('api/comment/pictures', kwargs={'comment_id': self.comment_by_user1.pk}),
+                                    {'picture': self.picture_pil})
+
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+
+        image_url = json.loads(response.content)['value']['picture_url']
+        self.assertTrue(self.is_picture_exist(image_url))
+
+
+class CommentPictureViewTests(CommentsPicturesViewsTestsBase):
+    def test_delete__wrong_picture_id__failed_404(self):
+        response = self.client.delete(reverse('api/comment/picture',
+                                              kwargs={'picture_id': 2342352}))
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+    def test_delete__unauthorized_user__failed_401(self):
+        self.client.login(username='User2', password='1')
+        response = self.client.delete(reverse('api/comment/picture',
+                                              kwargs={'picture_id': self.comment_by_user1_picture.pk}))
+
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+        self.assertTrue(self.is_picture_exist(self.comment_by_user1_picture.picture.url))
+
+    def test_delete__authorized_user__successfully_deleted_200(self):
+        response = self.client.delete(reverse('api/comment/picture',
+                                              kwargs={'picture_id': self.comment_by_user1_picture.pk}))
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertFalse(self.is_picture_exist(self.comment_by_user1_picture.picture.url))
+
+
+class CommentRatesViewsTestsBase(CommentsViewsTestsBase):
+    def setUp(self):
+        super(CommentRatesViewsTestsBase, self).setUp()
+        self.client.login(username='User2', password='1')
+
+
+class CommentRatesViewTests(CommentRatesViewsTestsBase):
+    def test_post__wrong_comment_id__failed_404(self):
+        response = self.client.post(reverse('api/comment/rates', kwargs={'comment_id': 123123}),
+                                    {'like': True})
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+    def test_post__comment_author__failed_406(self):
+        self.client.login(username='User1', password='1')
+        response = self.client.post(reverse('api/comment/rates', kwargs={'comment_id': self.comment_by_user1.pk}),
+                                    {'like': True})
+
+        self.assertEqual(status.HTTP_406_NOT_ACCEPTABLE, response.status_code)
